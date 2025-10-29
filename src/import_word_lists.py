@@ -1,4 +1,6 @@
 import csv
+import sqlite3
+import pandas as pd
 
 def get_word_groups_from_csv(csv_file_path):
     word_groups = {}
@@ -17,3 +19,12 @@ def get_word_groups_from_csv(csv_file_path):
                 word_groups[group] = [word]
                 
     return word_groups
+
+
+def get_sql_table_cursor(csv_file_path, table_name):
+    df = pd.read_csv(csv_file_path)
+    conn = sqlite3.connect(":memory:")
+    
+    df.to_sql(table_name, conn, if_exists='replace', index=False)
+
+    return conn.cursor()

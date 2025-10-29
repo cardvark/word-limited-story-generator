@@ -1,7 +1,8 @@
-from src.import_word_lists import get_word_groups_from_csv
-from src.compare_text import compare_cn_text
+from src.import_word_lists import get_word_groups_from_csv, get_sql_table_cursor
+from src.compare_text import evaluate_text
 
 csv_file_path = "./data/character-table.csv"
+table_name = 'chinese_word_groups'
 
 test_story = """
 有一只小猫。小猫很白，也很可爱。
@@ -20,16 +21,28 @@ test_story = """
 天黑了，小猫回家。它今天很开心！
 """
 
+# def main():
+#     word_groups = get_word_groups_from_csv(csv_file_path)
+
+#     # hsk_1_list = word_groups['HSK 1']
+#     # hsk_2_list = word_groups['HSK 2']
+
+#     # print(f"Extracted HSK 1 words.\nNum words: {len(hsk_1_list)}\n\nFull list:\n{hsk_1_list}")
+#     # print(f"Extracted HSK 2 words.\nNum words: {len(hsk_2_list)}\n\nFull list:\n{hsk_2_list}")
+
+#     story_groups_dict, group_counts = compare_cn_text(word_groups, test_story)
+
+#     for group, list in story_groups_dict.items():
+#         print(group)
+#         print(list)
+
+#     for group, count in group_counts.items():
+#         print(f"{group}: {count}")
+
 def main():
-    word_groups = get_word_groups_from_csv(csv_file_path)
+    cursor = get_sql_table_cursor(csv_file_path, table_name)
 
-    # hsk_1_list = word_groups['HSK 1']
-    # hsk_2_list = word_groups['HSK 2']
-
-    # print(f"Extracted HSK 1 words.\nNum words: {len(hsk_1_list)}\n\nFull list:\n{hsk_1_list}")
-    # print(f"Extracted HSK 2 words.\nNum words: {len(hsk_2_list)}\n\nFull list:\n{hsk_2_list}")
-
-    story_groups_dict, group_counts = compare_cn_text(word_groups, test_story)
+    story_groups_dict, group_counts = evaluate_text(cursor, table_name, test_story)
 
     for group, list in story_groups_dict.items():
         print(group)
@@ -37,7 +50,6 @@ def main():
 
     for group, count in group_counts.items():
         print(f"{group}: {count}")
-
 
 if __name__ == "__main__":
     main()
