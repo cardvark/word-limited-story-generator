@@ -23,13 +23,21 @@ test_story = """
 def main():
     word_groups = get_word_groups_from_csv(csv_file_path)
 
-    hsk_1_list = word_groups['HSK 1']
-    hsk_2_list = word_groups['HSK 2']
+    # hsk_1_list = word_groups['HSK 1']
+    # hsk_2_list = word_groups['HSK 2']
 
     # print(f"Extracted HSK 1 words.\nNum words: {len(hsk_1_list)}\n\nFull list:\n{hsk_1_list}")
     # print(f"Extracted HSK 2 words.\nNum words: {len(hsk_2_list)}\n\nFull list:\n{hsk_2_list}")
 
-    compare_cn_text(word_groups, test_story)
+    story_groups_dict, group_counts = compare_cn_text(word_groups, test_story)
+
+    for group, list in story_groups_dict.items():
+        print(group)
+        print(list)
+
+    for group, count in group_counts.items():
+        print(f"{group}: {count}")
+
 
 if __name__ == "__main__":
     main()
