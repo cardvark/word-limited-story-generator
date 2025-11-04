@@ -1,5 +1,9 @@
-from src.import_word_lists import get_word_groups_from_csv, get_sql_table_cursor
+from src.import_word_lists import get_db_cursor
 from src.compare_text import evaluate_text
+from src.constants import OPENROUTER_API_KEY
+from src.openrouter import generate_content
+from openai import OpenAI
+
 
 csv_file_path = "./data/character-table.csv"
 table_name = 'chinese_word_groups'
@@ -40,16 +44,33 @@ test_story = """
 #         print(f"{group}: {count}")
 
 def main():
-    cursor = get_sql_table_cursor(csv_file_path, table_name)
+    db_cursor = get_db_cursor(csv_file_path, table_name)
 
-    story_groups_dict, group_counts = evaluate_text(cursor, table_name, test_story)
+    story_groups_dict, group_counts = evaluate_text(db_cursor, table_name, test_story)
 
-    for group, list in story_groups_dict.items():
+    for group, list in sorted(story_groups_dict.items()):
         print(group)
         print(list)
 
-    for group, count in group_counts.items():
+    for group, count in sorted(group_counts.items()):
         print(f"{group}: {count}")
 
+
+def temp_main():
+    client = OpenAI(
+        base_url="https://openrouter.ai/api/v1",
+        api_key=OPENROUTER_API_KEY,
+    )
+    
+    system_prompt = """
+    
+    
+    """
+
+    message = "Tell me a joke."
+
+    generate_content(client, message, verbose=True)
+
+
 if __name__ == "__main__":
-    main()
+    temp_main()

@@ -3,7 +3,7 @@ import re
 
 
 def add_word_to_story_groups(word, group, story_groups_dict):
-    # TODO: test to ensure this updates the mutable dicts in place.
+    # TODO: Test to switch to list; calculate unique sets later. Enables total count of words in each 
     if group in story_groups_dict:
         story_groups_dict[group].add(word)
     else:
