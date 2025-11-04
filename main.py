@@ -1,8 +1,10 @@
+import sys
 from src.import_word_lists import get_db_cursor
 from src.compare_text import evaluate_text
 from src.constants import OPENROUTER_API_KEY
 from src.openrouter import generate_content
 from openai import OpenAI
+
 
 
 csv_file_path = "./data/character-table.csv"
@@ -25,28 +27,48 @@ test_story = """
 天黑了，小猫回家。它今天很开心！
 """
 
-# def main():
-#     word_groups = get_word_groups_from_csv(csv_file_path)
+test_story2 = """
+小猫在公园玩耍。它看到很多鸟，就追过去。突然，它找不到回家的路。
 
-#     # hsk_1_list = word_groups['HSK 1']
-#     # hsk_2_list = word_groups['HSK 2']
+小猫走啊走，来到大街道。有很多车，很多行人。它害怕，躲在树后面。
 
-#     # print(f"Extracted HSK 1 words.\nNum words: {len(hsk_1_list)}\n\nFull list:\n{hsk_1_list}")
-#     # print(f"Extracted HSK 2 words.\nNum words: {len(hsk_2_list)}\n\nFull list:\n{hsk_2_list}")
+一个小孩看到小猫，叫："妈妈！有只小猫！" 妈妈说："我们帮它找家吧。"
 
-#     story_groups_dict, group_counts = compare_cn_text(word_groups, test_story)
+他们带着小猫走，看到警察叔叔。警察叔叔问："你从哪里来？" 小猫不会说话。
 
-#     for group, list in story_groups_dict.items():
-#         print(group)
-#         print(list)
+警察叔叔把小猫带到动物中心。那里有很多动物，有狗，有兔子。
 
-#     for group, count in group_counts.items():
-#         print(f"{group}: {count}")
+第二天，小猫的主人来找它。主人是女的，穿红色衣服。她看到小猫，大哭："我的宝宝！"
 
-def main():
+警察叔叔说："你来得正好，小猫在这里。" 主人抱起小猫，说："以后别跑远了。"
+
+小猫回家，看到自己的小窝。它舔舔爪子，心想："以后要小心。"
+
+城市很大，小猫学会认路。它看到红绿灯，知道什么时候走。它学会找家，不再害怕。
+"""
+
+test_story3 = """
+一只小猫在街上走。它迷路了。城市很大，有很多房子和车。小猫害怕，找不到回家的路。
+
+小猫看到很多行人，但没人注意它。它饿了，想找点食物。它走到一个公园，看到一些小朋友在玩。小猫悄悄走过去，想吃点东西。
+
+一个女孩看到小猫，叫她的妈妈。妈妈给小猫一点食物。小猫吃了，不那么害怕了。妈妈说：“这只猫好可怜，我们帮它找家吧。”
+
+她们带小猫回家，给它水和食物。小猫很感激。妈妈给它一个纸箱，让它睡觉。小猫在箱子里很安全。
+
+第二天，妈妈在门口贴一张纸，上面写着猫的图片和电话号码。她说：“有人看到这只猫，请打电话。”
+
+几天后，一个男人打电话来说：“我看到这只猫，它是我家的猫。”妈妈很高兴，带小猫回家。
+
+小猫终于回家了。它和主人抱在一起。主人说：“你跑哪里去了？我们好担心。”
+
+小猫喵喵叫，好像在说：“对不起，我以后不会再跑远了。”
+"""
+
+def text_parser():
     db_cursor = get_db_cursor(csv_file_path, table_name)
 
-    story_groups_dict, group_counts = evaluate_text(db_cursor, table_name, test_story)
+    story_groups_dict, group_counts = evaluate_text(db_cursor, table_name, test_story3)
 
     for group, list in sorted(story_groups_dict.items()):
         print(group)
@@ -56,21 +78,28 @@ def main():
         print(f"{group}: {count}")
 
 
-def temp_main():
+def agent_messenger():
     client = OpenAI(
         base_url="https://openrouter.ai/api/v1",
         api_key=OPENROUTER_API_KEY,
     )
     
-    system_prompt = """
-    
-    
-    """
-
-    message = "Tell me a joke."
+    message = "Tell me a story about a cat who gets lost in a city, using only words in HSK1 and HSK2. Simplified Chinese. No more than 300 words long. /no_think"
 
     generate_content(client, message, verbose=True)
 
 
+def main():
+    mode = "parser"
+    if len(sys.argv) > 1:
+        mode = sys.argv[1]
+    
+    if mode == "parser":
+        text_parser()
+    elif mode == "agent":
+        agent_messenger()
+
+
+
 if __name__ == "__main__":
-    temp_main()
+    main()
