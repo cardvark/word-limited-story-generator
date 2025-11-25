@@ -3,3 +3,5 @@ venv/
 __pycache__/
 constants.py
 *.html
+*.json
+*_test.py

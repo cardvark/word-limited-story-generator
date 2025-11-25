@@ -4,7 +4,21 @@ from src.compare_text import evaluate_text
 from src.constants import OPENROUTER_API_KEY
 from src.openrouter import generate_content
 from openai import OpenAI
+import agent_messaging as am
 
+# TODO
+# Allow command prompt input for: 
+# - selecting HSK limits
+# - requesting specific words / phrases to be used (up to 10?)
+# - providing guidance for the type of story to be told
+# - small / medium / large story lengts (150 / 300 / 500 words?)
+# logic for:
+# - taking command inputs and updating the prompt.
+# - logic to check if the story included the required words.
+# - providing "feedback" to the agent on adherence to guidelines.
+# - running the request again, and comparing the second output.
+# prompt engineering:
+# - try various means of ensuring the first story is as close to the requirements as possible.
 
 
 csv_file_path = "./data/character-table.csv"
@@ -65,10 +79,14 @@ test_story3 = """
 小猫喵喵叫，好像在说：“对不起，我以后不会再跑远了。”
 """
 
-def text_parser():
+def text_parser(text):
     db_cursor = get_db_cursor(csv_file_path, table_name)
 
-    story_groups_dict, group_counts = evaluate_text(db_cursor, table_name, test_story3)
+    story_groups_dict, group_counts = evaluate_text(
+        db_cursor, 
+        table_name, 
+        text,
+    )
 
     for group, list in sorted(story_groups_dict.items()):
         print(group)
@@ -83,10 +101,21 @@ def agent_messenger():
         base_url="https://openrouter.ai/api/v1",
         api_key=OPENROUTER_API_KEY,
     )
-    
-    message = "Tell me a story about a cat who gets lost in a city, using only words in HSK1 and HSK2. Simplified Chinese. No more than 300 words long. /no_think"
 
-    generate_content(client, message, verbose=True)
+    message = "Tell me a story about a cat who gets lost in a city, using only words in HSK1 and HSK2. Simplified Chinese. No more than 300 words long. Before responding, double check to ensure all words fall within the previous restrictions. /no_think"
+
+    messages = [
+                {
+                    "role": "user",
+                    "content": message,
+                }
+    ]
+
+    first_draft = generate_content(client, messages, verbose=True)
+
+    print(messages)
+
+    text_parser(first_draft)
 
 
 def main():
@@ -95,9 +124,11 @@ def main():
         mode = sys.argv[1]
     
     if mode == "parser":
-        text_parser()
+        text_parser(test_story3)
+
     elif mode == "agent":
-        agent_messenger()
+        # agent_messenger()
+        am.generate_initial_prompt()
 
 
 
