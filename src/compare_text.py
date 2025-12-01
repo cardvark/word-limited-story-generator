@@ -1,5 +1,15 @@
 import jieba
 import re
+import src.agent_messaging as am
+
+
+def extract_story_from_response(story_text: str) -> str:
+    pattern = rf"{am.STORY_DELIMITER}([\s\S]*?){am.STORY_DELIMITER}"
+
+    match = re.search(pattern, story_text)
+
+    if match:
+        return match.group(1).strip()
 
 
 def add_word_to_story_groups(word, group, story_groups_dict):
@@ -59,7 +69,6 @@ def submit_word(word, word_and_group, story_groups_dict):
         partial_string = f"{word} matched {word_and_group[0]} of {word_and_group[1]}"
         add_word_to_story_groups(partial_string,'partial_match',story_groups_dict)
     
-    
 
 def evaluate_text(db_cursor, table_name, output_text):
     segmented_words = jieba.cut(output_text, cut_all=False)
@@ -68,9 +77,6 @@ def evaluate_text(db_cursor, table_name, output_text):
     story_groups_dict = {}
     group_counts = {}
 
-    # TODO
-    # consider certain words like "不" modifying other simple words. 
-    # may need to break up the word / group search to do a perfect match first, then look up by character, and *then* do a partial match.
 
     for word in segmented_words:
         if not re.match(chinese_char_pattern, word):

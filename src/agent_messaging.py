@@ -1,5 +1,6 @@
 from openai import OpenAI
 from src.constants import DEEPSEEK_API_KEY
+import src.compare_text as ct
 import json
 import re
 
@@ -11,6 +12,7 @@ Review all requirements carefully when generating responses, and double check yo
 """
 
 CHAT_MODEL = "deepseek-chat"
+STORY_DELIMITER = "---"
 
 def generate_initial_prompt() -> None:
     # TODO move this up to main; need to use the inputted values for text parsing.
@@ -71,7 +73,7 @@ Requirements:
     if required_words:
         request += f"- The student is attempting to learn these specific words through practice. Include the following words in your story: {required_words_list}\n"
 
-    request += "Bracket the story with three dashes: '---' in order to make it easier for the reader to parse the story, separate from any other notes you may have. \nRemember that your story should be in simplified Mandarin Chinese."
+    request += f"Bracket the story with '{STORY_DELIMITER}' in order to make it easier for the reader to parse the story, separate from any other notes you may have. \nRemember that your story should be in simplified Mandarin Chinese."
     
     print(f"Submitting the following request:\n{request}")
     print("\nPlease wait while the agent works on your story...")
@@ -79,8 +81,6 @@ Requirements:
 
 
 def converse_with_agent(request: str) -> None:
-    conversing = True
-
     client = OpenAI(
         api_key=DEEPSEEK_API_KEY, 
         base_url="https://api.deepseek.com"
@@ -92,18 +92,22 @@ def converse_with_agent(request: str) -> None:
         {"role": "user", "content": request},
     ]
 
+    conversing = True
     while conversing:
         response_content = generate_content(client, messages, True)
         print(response_content)
         # print("Confirming that the underlying list was updated:")
         # print(messages)
 
+        story_text = ct.extract_story_from_response(response_content)
+        
         # TODO: logic here to parse the story. Raise issues to user if the LLM response doesn't match requirements. (or something wonky, like all the story is in english.)
         
         user_input = input("Response:\n>> ")
 
         if user_input == "done":
             break
+
 
 
 def generate_content(

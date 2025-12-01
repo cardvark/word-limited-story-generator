@@ -4,7 +4,7 @@ from src.compare_text import evaluate_text
 from src.constants import OPENROUTER_API_KEY
 from src.openrouter import generate_content
 from openai import OpenAI
-import agent_messaging as am
+import src.agent_messaging as am
 
 # TODO
 # Allow command prompt input for: 
