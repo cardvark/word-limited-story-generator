@@ -22,6 +22,7 @@ import src.agent_messaging as am
 
 
 csv_file_path = "./data/character-table.csv"
+db_file = "./data/characters_database.db"
 table_name = 'chinese_word_groups'
 
 test_story = """

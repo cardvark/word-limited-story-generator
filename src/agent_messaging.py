@@ -1,6 +1,7 @@
 from openai import OpenAI
 from src.constants import DEEPSEEK_API_KEY
 import src.compare_text as ct
+import src.db_manager as dbm
 import json
 import re
 
@@ -100,7 +101,20 @@ def converse_with_agent(request: str) -> None:
         # print(messages)
 
         story_text = ct.extract_story_from_response(response_content)
-        
+        cursor = dbm.get_db_cursor()
+        story_groups_dict, group_counts = ct.evaluate_text(
+        cursor, 
+        dbm.table_name,
+        story_text,
+        )
+
+        for group, list in sorted(story_groups_dict.items()):
+            print(group)
+            print(list)
+
+        for group, count in sorted(group_counts.items()):
+            print(f"{group}: {count}")
+
         # TODO: logic here to parse the story. Raise issues to user if the LLM response doesn't match requirements. (or something wonky, like all the story is in english.)
         
         user_input = input("Response:\n>> ")
