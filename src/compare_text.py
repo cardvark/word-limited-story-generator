@@ -68,20 +68,24 @@ def evaluate_text(db_cursor, table_name, output_text):
     story_groups_dict = {}
     group_counts = {}
 
+    # TODO
+    # consider certain words like "不" modifying other simple words. 
+    # may need to break up the word / group search to do a perfect match first, then look up by character, and *then* do a partial match.
+
     for word in segmented_words:
         if not re.match(chinese_char_pattern, word):
             # print(f"Non-chinese char found: '{repr(word)}'; skipping to next word.")
             continue
 
 
-        word_and_group = get_word_and_group(db_cursor, table_name, word)
+        # word_and_group = get_word_and_group(db_cursor, table_name, word)
+        word_and_group = find_group_from_exact_word(db_cursor, table_name, word)
         if word_and_group:
             # print(word_and_group)
             submit_word(word, word_and_group, story_groups_dict)
             continue
-
-
-        # triggers if no partial match found, either.
+        
+        # searching for matches by char
         if len(word) > 1:
             found_list = []
 
@@ -95,9 +99,16 @@ def evaluate_text(db_cursor, table_name, output_text):
 
             for word_tup in found_list:
                 submit_word(word_tup[0], word_tup[1], story_groups_dict)
-
             continue
         
+        # trying partial match.
+        word_and_group = find_group_from_partial_match(db_cursor, table_name, word)
+        if word_and_group:
+            # print(word_and_group)
+            submit_word(word, word_and_group, story_groups_dict)
+            continue
+
+        # no matches found.        
         add_word_to_story_groups(word, "not_found", story_groups_dict)
 
     for group, word_list in story_groups_dict.items():

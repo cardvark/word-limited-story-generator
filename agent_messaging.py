@@ -12,11 +12,12 @@ Review all requirements carefully when generating responses, and double check yo
 
 CHAT_MODEL = "deepseek-chat"
 
-def generate_initial_prompt():
-    print("This program will contact an LLM in order to generate a story in Mandarin Chinese, based on your requirements.")
+def generate_initial_prompt() -> None:
+    # TODO move this up to main; need to use the inputted values for text parsing.
+    print("This program will contact an LLM in order to generate a exercises in Mandarin Chinese, based on your requirements.")
 
     while True:
-        HSK_LEVEL = input("What is the highest level of HSK characters you want for your story? Enter between 1 - 6.\n>> ")
+        HSK_LEVEL = input("What is the highest level of HSK characters you are familiar with? Enter between 1 - 6.\n>> ")
 
         try:
             int_check = int(HSK_LEVEL)
@@ -50,11 +51,16 @@ def generate_initial_prompt():
         if not all_chinese:
             continue
         break
+    
+    # TODO: set up logic for story vs. simple practice sentences.
 
     story_topic = input("Do you have a preference on the subject of the story? E.g., a cat getting lost in the city. Leave blank if you have no preference.\n>> ")
 
-    if not story_topic:
-        story_topic = "a cat getting lost in a city"
+    if not story_topic: 
+        if not required_words:
+            story_topic = "a cat getting lost in a city"
+        else:
+            story_topic = "use your best judgment, based on the specific requested words below."
         
     request = f"""Tell me a story about: {story_topic}.
 Requirements:
@@ -63,13 +69,16 @@ Requirements:
 """
     
     if required_words:
-        request += f"- The student is attempting to learn these specific words through practice. Include the following words in your story: {required_words_list}"
+        request += f"- The student is attempting to learn these specific words through practice. Include the following words in your story: {required_words_list}\n"
+
+    request += "Bracket the story with three dashes: '---' in order to make it easier for the reader to parse the story, separate from any other notes you may have. \nRemember that your story should be in simplified Mandarin Chinese."
     
     print(f"Submitting the following request:\n{request}")
+    print("\nPlease wait while the agent works on your story...")
     converse_with_agent(request)
 
 
-def converse_with_agent(request: str):
+def converse_with_agent(request: str) -> None:
     conversing = True
 
     client = OpenAI(
@@ -86,10 +95,12 @@ def converse_with_agent(request: str):
     while conversing:
         response_content = generate_content(client, messages, True)
         print(response_content)
-        print("Confirming that the underlying list was updated:")
-        print(messages)
+        # print("Confirming that the underlying list was updated:")
+        # print(messages)
+
+        # TODO: logic here to parse the story. Raise issues to user if the LLM response doesn't match requirements. (or something wonky, like all the story is in english.)
         
-        user_input = input("Response:")
+        user_input = input("Response:\n>> ")
 
         if user_input == "done":
             break
