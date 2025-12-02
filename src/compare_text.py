@@ -84,16 +84,6 @@ def get_segmented_chinese_words_only(story_text: str) -> list[str]:
     return segmented_clean
 
 
-def evaluate_story_text(story_text, required_words):
-    story_groups_dict = get_story_groups_dict(story_text)
-    group_counts = get_group_counts(story_groups_dict, required_words)
-    
-    story_group_printer(story_groups_dict)
-    group_counts_printer(group_counts)
-    required_counts_dict = get_required_words_count(story_text, required_words)
-    print(required_counts_dict)
-
-
 # TODO rework this to return also a count of each word used.
 # The data structure is getting a little unwieldy, though. Would be a list of lists? or a list of dicts?
 def get_story_groups_dict(story_text: str) -> dict[str, list[str]]:
@@ -134,56 +124,6 @@ def get_story_groups_dict(story_text: str) -> dict[str, list[str]]:
         add_word_to_story_groups(word, "not_found", story_groups_dict)
 
     return story_groups_dict
-
-
-# TODO: Deprecate
-def evaluate_text(db_cursor, table_name, story_text):
-    # TODO possibly break this up. Get the story_groups_dict, then have another function to do the group_counts.
-    # also potentially rename to be clearer.
-
-    story_groups_dict = {}
-    group_counts = {}
-
-    segmented_words = get_segmented_chinese_words_only(story_text)
-
-    for word in segmented_words:
-        # word_and_group = get_word_and_group(db_cursor, table_name, word)
-        word_and_group = find_group_from_exact_word(db_cursor, table_name, word)
-        if word_and_group:
-            # print(word_and_group)
-            submit_word(word, word_and_group, story_groups_dict)
-            continue
-        
-        # searching for matches by char
-        if len(word) > 1:
-            found_list = []
-
-            for char in word:
-                word_and_group = get_word_and_group(db_cursor, table_name, char)
-                if not word_and_group:
-                    break
-
-                found_word, group = word_and_group
-                found_list.append((char, word_and_group))
-
-            for word_tup in found_list:
-                submit_word(word_tup[0], word_tup[1], story_groups_dict)
-            continue
-        
-        # trying partial match.
-        word_and_group = find_group_from_partial_match(db_cursor, table_name, word)
-        if word_and_group:
-            # print(word_and_group)
-            submit_word(word, word_and_group, story_groups_dict)
-            continue
-
-        # no matches found.        
-        add_word_to_story_groups(word, "not_found", story_groups_dict)
-
-    for group, word_list in story_groups_dict.items():
-        group_counts[group] = len(word_list)
-
-    return story_groups_dict, group_counts
 
 
 def get_required_words_count(

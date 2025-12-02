@@ -82,15 +82,6 @@ class TestTextEvaluation(unittest.TestCase):
         story_groups_dict = ct.get_story_groups_dict(story_text)
         group_counts_dict = ct.get_group_counts(story_groups_dict, [])
 
-        # ct.group_counts_printer(group_counts_dict)
 
-        # group_counts_dict = ct.get_group_counts(story_groups_dict, required_words)
-
-        # ct.group_counts_printer(group_counts_dict)
-
-        # required_counts_dict = ct.get_required_words_count(story_text, required_words)
-        # print(required_counts_dict)
-
-        ct.evaluate_story_text(story_text, required_words)
         violations = ct.hsk_level_violations_checker(group_counts_dict, 2)
         print(violations)

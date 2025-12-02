@@ -2,6 +2,7 @@ import unittest
 import src.compare_text as ct
 import src.db_manager as dbm
 import src.agent_messaging as am
+import src.prompt_management as pm
 
 
 required_words1 = ['吵架', '遇到', '难道']
@@ -63,7 +64,7 @@ class TextFixRequests(unittest.TestCase):
 """
 
         story_text = ct.extract_story_from_response(test_story)
-        fix_request = am.request_required_words_fix(story_text, required_words)
+        fix_request = pm.generate_required_words_fix_prompt(story_text, required_words)
 
         # print(fix_request)
 
@@ -94,7 +95,7 @@ class TextFixRequests(unittest.TestCase):
 *   **难道 (nán dào):** used to turn a statement into a rhetorical question, implying the answer is "yes" or "obviously". **难道** friends shouldn't play happily together? (The implied answer is: "Of course they should!")
 """
         story_text = ct.extract_story_from_response(test_story)
-        fix_request = am.request_required_words_fix(story_text, required_words)
+        fix_request = pm.generate_required_words_fix_prompt(story_text, required_words)
 
         print(fix_request)
 
@@ -107,5 +108,5 @@ class TextFixRequests(unittest.TestCase):
 class TestStoryEvaluation(unittest.TestCase):
     def test_001_run_story_evaluation(self):
         story_text = ct.extract_story_from_response(test_story_missing1)
-        am.run_story_evaluation(story_text, required_words1, 2)
+        pm.run_story_evaluation(story_text, required_words1, 2)
         pass
