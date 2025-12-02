@@ -93,6 +93,7 @@ def evaluate_story_text(story_text, required_words):
     required_counts_dict = get_required_words_count(story_text, required_words)
     print(required_counts_dict)
 
+
 def hsk_level_violations_checker(group_counts_dict: dict[str, int], hsk_level: int) -> float:
     # returns value 0-1 that exceed the allowed HSK level, or are not found.
     # hsk_string = str(hsk_level)
@@ -107,6 +108,8 @@ def hsk_level_violations_checker(group_counts_dict: dict[str, int], hsk_level: i
         if "HSK" in group_name:
             if int(group_name[-1]) <= hsk_level:
                 continue
+        if "partial_match" in group_name:
+            continue
         total_violations += count
 
     return total_violations / total_unique_words
@@ -261,6 +264,8 @@ def group_counts_printer(group_counts):
 
     for group, count in sorted(group_counts.items()):
         if count == 0:
+            continue
+        if "partial_match" in group:
             continue
         percent = count / total_unique_words * 100
         print(f"{group}: {count} ({percent: .2f}%)")
