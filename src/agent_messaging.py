@@ -78,15 +78,14 @@ Requirements:
     
     print(f"Submitting the following request:\n{request}")
     print("\nPlease wait while the agent works on your story...")
-    converse_with_agent(request)
+    converse_with_agent(request, required_words)
 
 
-def converse_with_agent(request: str) -> None:
+def converse_with_agent(request: str, requird_words: list[str]) -> None:
     client = OpenAI(
         api_key=DEEPSEEK_API_KEY, 
         base_url="https://api.deepseek.com"
     )
-
 
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
@@ -101,13 +100,25 @@ def converse_with_agent(request: str) -> None:
         # print(messages)
 
         story_text = ct.extract_story_from_response(response_content)
+        
         cursor = dbm.get_db_cursor()
+
         story_groups_dict, group_counts = ct.evaluate_text(
         cursor, 
         dbm.table_name,
         story_text,
         )
 
+        print("\n\nEvaluating story text to determine fit against your requirements:")
+
+        # TODO
+        # make use of "required_words" list.
+        # check if words are in list. Remove them from the evaluation process?
+            # 1. Need to confirm the story has the words.
+            # 2. Need to "remove" these from the the HSK comparison. 
+                # idea: can check words against required list; if in list, then don't add to the HSK count dict.
+
+        #TODO Make the printing into a separate function in "compare_text.py"
         for group, list in sorted(story_groups_dict.items()):
             print(group)
             print(list)
@@ -116,6 +127,8 @@ def converse_with_agent(request: str) -> None:
             print(f"{group}: {count}")
 
         # TODO: logic here to parse the story. Raise issues to user if the LLM response doesn't match requirements. (or something wonky, like all the story is in english.)
+        # Provide stats on: whether all required words were included; what % of words were within the HSK levels.
+        # let user decide to accept or try again with greater restriction.
         
         user_input = input("Response:\n>> ")
 

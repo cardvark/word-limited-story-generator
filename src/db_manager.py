@@ -7,7 +7,7 @@ db_file_path = "./data/characters_database.db"
 table_name = 'chinese_word_groups'
 
 
-def generate_database():
+def generate_database() -> None:
     df = pd.read_csv(csv_file_path)
     conn = sqlite3.connect(db_file_path)
     
@@ -15,7 +15,7 @@ def generate_database():
 
     conn.close()
 
-def get_db_cursor():
+def get_db_cursor() -> sqlite3.Connection:
     if not os.path.isfile(db_file_path):
         generate_database()
     conn = sqlite3.connect(db_file_path)

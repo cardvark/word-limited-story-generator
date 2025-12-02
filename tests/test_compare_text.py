@@ -1,5 +1,6 @@
 import unittest
 import src.compare_text as ct
+import src.db_manager as dbm
 
 class TestStoryExtractor(unittest.TestCase):
     def test_extract_story_from_response(self):
@@ -52,3 +53,44 @@ This short story uses only HSK2-level vocabulary and grammar, focusing on the re
 最后，他们一起让猫下来了。小明说：“谢谢你们！今天我真**体会**到了朋友很重要。”""",
             parsed_text
             )
+
+
+class TestTextEvaluation(unittest.TestCase):
+    def test_group_counts(self):
+        cursor = dbm.get_db_cursor()
+        required_words = ['吵架', '遇到', '难道']
+        test_story = """
+---
+小明和小红是好朋友。一天，他们在公园玩。突然，他们看到两个人很大声地吵架。一个人说：“这是我的！”另一个人说：“不，这是我的！”
+
+小红问小明：“他们为什么吵架？”小明说：“我不知道。我们走吧，我不想看他们吵架。”
+
+他们走开了。然后，他们遇到一只小狗。小狗很可爱，他们和小狗玩。小红很高兴，她说：“看，小狗比吵架好！”
+
+小明说：“对！难道朋友不应该一起开心地玩吗？吵架不好。”
+
+他们和小狗玩了一会儿。天晚了，他们回家了。今天，他们明白了朋友不要吵架。
+---
+
+**Notes for the learner:**
+*   **吵架 (chǎo jià):** to quarrel / to have an argument. In the story, two people are **吵架** in the park.
+*   **遇到 (yù dào):** to meet / to encounter (by chance). The friends **遇到** a cute dog.
+*   **难道 (nán dào):** used to turn a statement into a rhetorical question, implying the answer is "yes" or "obviously". **难道** friends shouldn't play happily together? (The implied answer is: "Of course they should!")
+"""
+        story_text = ct.extract_story_from_response(test_story)
+        
+        story_groups_dict = ct.get_story_groups_dict(story_text)
+        group_counts_dict = ct.get_group_counts(story_groups_dict, [])
+
+        # ct.group_counts_printer(group_counts_dict)
+
+        # group_counts_dict = ct.get_group_counts(story_groups_dict, required_words)
+
+        # ct.group_counts_printer(group_counts_dict)
+
+        # required_counts_dict = ct.check_required_words(story_text, required_words)
+        # print(required_counts_dict)
+
+        ct.evaluate_story_text(story_text, required_words)
+        violations = ct.hsk_level_violations_checker(group_counts_dict, 2)
+        print(violations)
