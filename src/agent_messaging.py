@@ -147,20 +147,54 @@ def run_story_evaluation(
     print("\n\nEvaluating story text to determine fit against your requirements:")
     story_groups_dict = ct.get_story_groups_dict(story_text)
     group_counts_dict = ct.get_group_counts(story_groups_dict, required_words)
-
-    # ct.story_group_printer(story_groups_dict)
-    print("Unique characters breakdown by group:")
-    ct.group_counts_printer(group_counts_dict)
     required_counts_dict = ct.get_required_words_count(story_text, required_words)
 
-    # print(required_counts_dict)
+    run_evaluation_printer(story_groups_dict, group_counts_dict, required_counts_dict, hsk_level)
+
+    while True:
+        prompt = "Select from the following options:\n[1] See detailed Character group and list breakdown.\n[2] Request the agent to fix requirements issues with the story. \n[3] Accept story as is.\n>> "
+        user_choice = input(prompt)
+
+        try: 
+            choice = int(user_choice)
+            if choice < 1 or choice > 3: raise ValueError
+        except ValueError:
+            print("Invalid input. Please enter a digit for one of the options.")
+
+        match choice:
+            case 1:
+                ct.story_group_printer(story_groups_dict)
+            case 2:
+                pass
+            case 3:
+                print("Enjoy!")
+                return
+
+
+def generate_fix_prompt(
+        story_groups_dict: dict[str, list[str]], 
+        group_counts_dict: dict[str, int],
+        required_counts_dict: dict[str, int],
+        hsk_level: int | None,
+        ) -> None:
+    pass
+    
+
+def run_evaluation_printer(
+        story_groups_dict: dict[str, list[str]], 
+        group_counts_dict: dict[str, int],
+        required_counts_dict: dict[str, int],
+        hsk_level: int | None,
+        ) -> None:
+    print("Unique characters breakdown by group:")
+    ct.group_counts_printer(group_counts_dict)
     hsk_violations_percent = ct.hsk_level_violations_checker(group_counts_dict, hsk_level)
     print(f"Note: {hsk_violations_percent * 100:.1f}% characters over HSK{hsk_level}\n")
 
     print("Required words count:")
     for word, count in required_counts_dict.items():
         print(f"{word}: {count}")
-    
+
 
 def request_required_words_fix(
         story_text: str,
