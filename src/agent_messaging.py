@@ -20,14 +20,14 @@ def generate_initial_prompt() -> None:
     print("This program will contact an LLM in order to generate a exercises in Mandarin Chinese, based on your requirements.")
 
     while True:
-        HSK_LEVEL = input("What is the highest level of HSK characters you are familiar with? Enter between 1 - 6.\n>> ")
+        hsk_level = input("What is the highest level of HSK characters you are familiar with? Enter between 1 - 6.\n>> ")
 
         try:
-            int_check = int(HSK_LEVEL)
+            hsk_level = int(hsk_level)
         except:
             continue
 
-        if int_check > 0 and int_check < 7:
+        if hsk_level > 0 and hsk_level < 7:
             break
 
     while True:
@@ -67,7 +67,7 @@ def generate_initial_prompt() -> None:
         
     request = f"""Tell me a story about: {story_topic}.
 Requirements:
-- Use characters through HSK{HSK_LEVEL} only
+- Use characters through HSK{hsk_level} only
 - No more than 300 words long.
 """
     
@@ -78,12 +78,13 @@ Requirements:
     
     print(f"Submitting the following request:\n{request}")
     print("\nPlease wait while the agent works on your story...")
-    converse_with_agent(request, required_words)
+    converse_with_agent(request, required_words, hsk_level)
 
 
 def converse_with_agent(
         request: str, 
-        requird_words: list[str],
+        required_words: list[str],
+        hsk_level: int,
         ) -> None:
     client = OpenAI(
         api_key=DEEPSEEK_API_KEY, 
@@ -95,55 +96,32 @@ def converse_with_agent(
         {"role": "user", "content": request},
     ]
 
-    conversing = True
-    while conversing:
+    while True:
         response_content = generate_content(client, messages, True)
         print(response_content)
         # print("Confirming that the underlying list was updated:")
         # print(messages)
 
         story_text = ct.extract_story_from_response(response_content)
+
+        user_response = run_story_evaluation(story_text, required_words, hsk_level)
+
+        if not user_response:
+            return
         
-        cursor = dbm.get_db_cursor()
-
-        story_groups_dict, group_counts = ct.evaluate_text(
-        cursor, 
-        dbm.table_name,
-        story_text,
-        )
-
-        print("\n\nEvaluating story text to determine fit against your requirements:")
-
-        # TODO
-        # make use of "required_words" list.
-        # check if words are in list. Remove them from the evaluation process?
-            # 1. Need to confirm the story has the words.
-            # 2. Need to "remove" these from the the HSK comparison. 
-                # idea: can check words against required list; if in list, then don't add to the HSK count dict.
-
-        #TODO Make the printing into a separate function in "compare_text.py"
-        for group, list in sorted(story_groups_dict.items()):
-            print(group)
-            print(list)
-
-        for group, count in sorted(group_counts.items()):
-            print(f"{group}: {count}")
-
-        # TODO: logic here to parse the story. Raise issues to user if the LLM response doesn't match requirements. (or something wonky, like all the story is in english.)
-        # Provide stats on: whether all required words were included; what % of words were within the HSK levels.
-        # let user decide to accept or try again with greater restriction.
+        message_response = {
+            "role": "user",
+            "content": user_response
+        }
         
-        user_input = input("Response:\n>> ")
-
-        if user_input == "done":
-            break
+        messages.append(message_response)
         
 
 def run_story_evaluation(
         story_text: str, 
         required_words: list[str],
         hsk_level: int | None,
-        ):
+        ) -> str:
     print("\n\nEvaluating story text to determine fit against your requirements:")
     story_groups_dict = ct.get_story_groups_dict(story_text)
     group_counts_dict = ct.get_group_counts(story_groups_dict, required_words)
@@ -165,10 +143,10 @@ def run_story_evaluation(
             case 1:
                 ct.story_group_printer(story_groups_dict)
             case 2:
-                pass
+                return generate_fix_prompt(story_groups_dict, group_counts_dict, required_counts_dict, hsk_level)
             case 3:
                 print("Enjoy!")
-                return
+                return ""
 
 
 def generate_fix_prompt(
@@ -177,7 +155,8 @@ def generate_fix_prompt(
         required_counts_dict: dict[str, int],
         hsk_level: int | None,
         ) -> None:
-    pass
+    
+    return "Your story included several words that were outside of the requested HSK limit. Please review your text and try again."
     
 
 def run_evaluation_printer(
@@ -186,7 +165,7 @@ def run_evaluation_printer(
         required_counts_dict: dict[str, int],
         hsk_level: int | None,
         ) -> None:
-    print("Unique characters breakdown by group:")
+    print("\nUnique characters breakdown by group:")
     ct.group_counts_printer(group_counts_dict)
     hsk_violations_percent = ct.hsk_level_violations_checker(group_counts_dict, hsk_level)
     print(f"Note: {hsk_violations_percent * 100:.1f}% characters over HSK{hsk_level}\n")
