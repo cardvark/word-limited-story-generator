@@ -90,7 +90,7 @@ def evaluate_story_text(story_text, required_words):
     
     story_group_printer(story_groups_dict)
     group_counts_printer(group_counts)
-    required_counts_dict = check_required_words(story_text, required_words)
+    required_counts_dict = get_required_words_count(story_text, required_words)
     print(required_counts_dict)
 
 def hsk_level_violations_checker(group_counts_dict: dict[str, int], hsk_level: int) -> float:
@@ -204,7 +204,7 @@ def evaluate_text(db_cursor, table_name, story_text):
     return story_groups_dict, group_counts
 
 
-def check_required_words(
+def get_required_words_count(
         story_text: str, 
         required_words: list[str],
         ) -> dict[str, int]:
@@ -215,6 +215,18 @@ def check_required_words(
         count_dict[word] = word_count
 
     return count_dict
+
+
+def check_required_words_missing(
+        required_words_count_dict: dict[str, int],
+        ) -> list[str]:
+    missing_words = []
+    
+    for word, count in required_words_count_dict.items():
+        if count == 0:
+            missing_words.append(word)
+
+    return missing_words
 
 
 def get_group_counts(

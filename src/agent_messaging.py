@@ -81,7 +81,10 @@ Requirements:
     converse_with_agent(request, required_words)
 
 
-def converse_with_agent(request: str, requird_words: list[str]) -> None:
+def converse_with_agent(
+        request: str, 
+        requird_words: list[str],
+        ) -> None:
     client = OpenAI(
         api_key=DEEPSEEK_API_KEY, 
         base_url="https://api.deepseek.com"
@@ -135,6 +138,24 @@ def converse_with_agent(request: str, requird_words: list[str]) -> None:
         if user_input == "done":
             break
 
+
+def request_required_words_fix(
+        story_text: str,
+        required_words: list[str],
+        ) -> str:
+    fix_request = ""
+
+    required_words_count_dict = ct.get_required_words_count(story_text, required_words)
+    missing_list = ct.check_required_words_missing(required_words_count_dict)
+
+    if missing_list:
+        fix_request = "You failed to include the following required words:\n"
+        for word in missing_list:
+            fix_request += f"- {word}\n"
+
+        fix_request += f"Please ensure you include all required words when generating your next attempt: {required_words}\n"
+
+    return fix_request
 
 
 def generate_content(

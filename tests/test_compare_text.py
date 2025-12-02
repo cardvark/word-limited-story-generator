@@ -88,7 +88,7 @@ class TestTextEvaluation(unittest.TestCase):
 
         # ct.group_counts_printer(group_counts_dict)
 
-        # required_counts_dict = ct.check_required_words(story_text, required_words)
+        # required_counts_dict = ct.get_required_words_count(story_text, required_words)
         # print(required_counts_dict)
 
         ct.evaluate_story_text(story_text, required_words)
