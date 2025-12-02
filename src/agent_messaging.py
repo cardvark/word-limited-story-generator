@@ -137,7 +137,30 @@ def converse_with_agent(
 
         if user_input == "done":
             break
+        
 
+def run_story_evaluation(
+        story_text: str, 
+        required_words: list[str],
+        hsk_level: int | None,
+        ):
+    print("\n\nEvaluating story text to determine fit against your requirements:")
+    story_groups_dict = ct.get_story_groups_dict(story_text)
+    group_counts_dict = ct.get_group_counts(story_groups_dict, required_words)
+
+    # ct.story_group_printer(story_groups_dict)
+    print("Unique characters breakdown by group:")
+    ct.group_counts_printer(group_counts_dict)
+    required_counts_dict = ct.get_required_words_count(story_text, required_words)
+
+    # print(required_counts_dict)
+    hsk_violations_percent = ct.hsk_level_violations_checker(group_counts_dict, hsk_level)
+    print(f"Note: {hsk_violations_percent * 100:.1f}% characters over HSK{hsk_level}\n")
+
+    print("Required words count:")
+    for word, count in required_counts_dict.items():
+        print(f"{word}: {count}")
+    
 
 def request_required_words_fix(
         story_text: str,
