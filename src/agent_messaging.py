@@ -1,10 +1,8 @@
 from openai import OpenAI
 from src.constants import DEEPSEEK_API_KEY
-import src.compare_text as ct
-import src.db_manager as dbm
 import src.prompt_management as pm
-import json
 import re
+from src.config import *
 
 SYSTEM_PROMPT = """
 You are a helpful Chinese language teacher, designed to help English speakers learn Mandarin Chinese. Your responses should be in English, except for where you providing examples or stories in Chinese, which should be written in simplified Chinese characters.
@@ -12,9 +10,6 @@ You are a helpful Chinese language teacher, designed to help English speakers le
 Review all requirements carefully when generating responses, and double check your work as necessary to ensure that your responses adhere to the requirements. If you your responses deviate too greatly from the requirements, you will be prompted to try again.
 
 """
-
-CHAT_MODEL = "deepseek-chat"
-STORY_DELIMITER = "---"
 
 def generate_initial_prompt() -> None:
     # TODO move this up to main; need to use the inputted values for text parsing.
@@ -39,20 +34,10 @@ def generate_initial_prompt() -> None:
         if not required_words:
             break
         
-        split_pattern = r"[，、,]"
-        required_words_list = re.split(split_pattern, required_words)
-        required_words_list = [item.strip() for item in required_words_list if item.strip()]
+        required_words_list = pm.raw_to_chars_list(required_words)
 
-        all_chinese = True       
-        chinese_char_pattern = re.compile(r'[\u4e00-\u9fff]+')
-        for word in required_words_list:
-            for char in word:
-                if not re.match(chinese_char_pattern, char):
-                    print("Please ensure all words are simplified Chinese characters.")
-                    all_chinese = False
-                    break
-
-        if not all_chinese:
+        if not pm.check_if_chinese_chars(required_words_list):
+            print("Please ensure all words are simplified Chinese characters.")
             continue
         break
     
@@ -103,7 +88,7 @@ def converse_with_agent(
         # print("Confirming that the underlying list was updated:")
         # print(messages)
 
-        story_text = ct.extract_story_from_response(response_content)
+        story_text = pm.extract_story_from_response(response_content)
 
         user_response = pm.run_story_evaluation(story_text, required_words, hsk_level)
 

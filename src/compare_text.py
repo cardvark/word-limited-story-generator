@@ -5,15 +5,6 @@ import src.import_word_lists as iwl
 import src.db_manager as dbm
 
 
-def extract_story_from_response(story_text: str) -> str:
-    pattern = rf"{am.STORY_DELIMITER}([\s\S]*?){am.STORY_DELIMITER}"
-
-    match = re.search(pattern, story_text)
-
-    if match:
-        return match.group(1).strip()
-
-
 def add_word_to_story_groups(word, group, story_groups_dict):
     # TODO: Test to switch to list; calculate unique sets later. Enables total count of words in each 
     if group in story_groups_dict:
@@ -167,30 +158,6 @@ def get_group_counts(
         group_counts[group] = word_count
     
     return group_counts
-
-
-def story_group_printer(story_groups_dict):
-    for group, list in sorted(story_groups_dict.items()):
-        print(group)
-        print(list)
-
-
-def group_counts_printer(group_counts):
-    total_unique_words = 0
-
-    for group, count in group_counts.items():
-        if "partial_match" in group:
-            continue
-        total_unique_words += count
-
-    for group, count in sorted(group_counts.items()):
-        if count == 0:
-            continue
-        if "partial_match" in group:
-            continue
-
-        percent = count / total_unique_words * 100
-        print(f"{group}: {count} ({percent: .2f}%)")
 
 
 def hsk_level_violations_checker(

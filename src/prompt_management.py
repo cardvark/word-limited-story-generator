@@ -1,4 +1,16 @@
 import src.compare_text as ct
+from src.config import *
+import re
+
+
+def extract_story_from_response(story_text: str) -> str:
+    pattern = rf"{STORY_DELIMITER}([\s\S]*?){STORY_DELIMITER}"
+
+    match = re.search(pattern, story_text)
+
+    if match:
+        return match.group(1).strip()
+
 
 def run_story_evaluation(
         story_text: str, 
@@ -104,3 +116,22 @@ def group_counts_printer(group_counts):
 
         percent = count / total_unique_words * 100
         print(f"{group}: {count} ({percent: .2f}%)")
+
+
+def raw_to_chars_list(raw_input: str) -> list[str]:
+    split_pattern = r"[，、,]"
+    words_list = re.split(split_pattern, raw_input)
+    words_list = [item.strip() for item in words_list if item.strip()]
+    return words_list
+
+
+def check_if_chinese_chars(words_list: list[str]) -> bool:
+    all_chinese = True       
+    chinese_char_pattern = re.compile(r'[\u4e00-\u9fff]+')
+    for word in words_list:
+        for char in word:
+            if not re.match(chinese_char_pattern, char):
+                all_chinese = False
+                break
+            
+    return all_chinese

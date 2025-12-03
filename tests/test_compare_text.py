@@ -1,6 +1,7 @@
 import unittest
 import src.compare_text as ct
 import src.db_manager as dbm
+import src.prompt_management as pm
 
 class TestStoryExtractor(unittest.TestCase):
     def test_extract_story_from_response(self):
@@ -36,7 +37,7 @@ This short story uses only HSK2-level vocabulary and grammar, focusing on the re
 """
     
 
-        parsed_text = ct.extract_story_from_response(test_story2)
+        parsed_text = pm.extract_story_from_response(test_story2)
 
         # print(parsed_text)
         with self.subTest():
@@ -77,7 +78,7 @@ class TestTextEvaluation(unittest.TestCase):
 *   **遇到 (yù dào):** to meet / to encounter (by chance). The friends **遇到** a cute dog.
 *   **难道 (nán dào):** used to turn a statement into a rhetorical question, implying the answer is "yes" or "obviously". **难道** friends shouldn't play happily together? (The implied answer is: "Of course they should!")
 """
-        story_text = ct.extract_story_from_response(test_story)
+        story_text = pm.extract_story_from_response(test_story)
         
         story_groups_dict = ct.get_story_groups_dict(story_text)
         group_counts_dict = ct.get_group_counts(story_groups_dict, [])

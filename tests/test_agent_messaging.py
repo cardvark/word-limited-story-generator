@@ -63,7 +63,7 @@ class TextFixRequests(unittest.TestCase):
 *   **难道 (nán dào):** used to turn a statement into a rhetorical question, implying the answer is "yes" or "obviously". **难道** friends shouldn't play happily together? (The implied answer is: "Of course they should!")
 """
 
-        story_text = ct.extract_story_from_response(test_story)
+        story_text = pm.extract_story_from_response(test_story)
         fix_request = pm.generate_required_words_fix_prompt(story_text, required_words)
 
         # print(fix_request)
@@ -94,7 +94,7 @@ class TextFixRequests(unittest.TestCase):
 *   **遇到 (yù dào):** to meet / to encounter (by chance). The friends **遇到** a cute dog.
 *   **难道 (nán dào):** used to turn a statement into a rhetorical question, implying the answer is "yes" or "obviously". **难道** friends shouldn't play happily together? (The implied answer is: "Of course they should!")
 """
-        story_text = ct.extract_story_from_response(test_story)
+        story_text = pm.extract_story_from_response(test_story)
         fix_request = pm.generate_required_words_fix_prompt(story_text, required_words)
 
         print(fix_request)
@@ -107,6 +107,6 @@ class TextFixRequests(unittest.TestCase):
 
 class TestStoryEvaluation(unittest.TestCase):
     def test_001_run_story_evaluation(self):
-        story_text = ct.extract_story_from_response(test_story_missing1)
+        story_text = pm.extract_story_from_response(test_story_missing1)
         pm.run_story_evaluation(story_text, required_words1, 2)
         pass
