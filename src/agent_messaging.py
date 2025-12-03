@@ -2,7 +2,7 @@ from openai import OpenAI
 from src.constants import DEEPSEEK_API_KEY
 import src.prompt_management as pm
 import re
-from src.config import *
+import src.config as cfg
 
 SYSTEM_PROMPT = """
 You are a helpful Chinese language teacher, designed to help English speakers learn Mandarin Chinese. Your responses should be in English, except for where you providing examples or stories in Chinese, which should be written in simplified Chinese characters.
@@ -60,7 +60,7 @@ Requirements:
     if required_words:
         request += f"- The student is attempting to learn these specific words through practice. Include the following words in your story: {required_words_list}\n"
 
-    request += f"Bracket the story with '{STORY_DELIMITER}' in order to make it easier for the reader to parse the story, separate from any other notes you may have. \nRemember that your story should be in simplified Mandarin Chinese."
+    request += f"Bracket the story with '{cfg.STORY_DELIMITER}' in order to make it easier for the reader to parse the story, separate from any other notes you may have. \nRemember that your story should be in simplified Mandarin Chinese."
     
     print(f"Submitting the following request:\n{request}")
     print("\nPlease wait while the agent works on your story...")
@@ -95,6 +95,8 @@ def converse_with_agent(
         if not user_response:
             return
         
+        print(f"The following message has been communicated to the agent:\n{user_response}")
+        
         message_response = {
             "role": "user",
             "content": user_response
@@ -110,7 +112,7 @@ def generate_content(
         ) -> str:
     
     response = client.chat.completions.create(
-        model=CHAT_MODEL,
+        model=cfg.CHAT_MODEL,
         messages=messages,
         stream=False,
     )

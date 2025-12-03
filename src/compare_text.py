@@ -1,7 +1,5 @@
 import jieba
 import re
-import src.agent_messaging as am
-import src.import_word_lists as iwl
 import src.db_manager as dbm
 
 
@@ -180,3 +178,40 @@ def hsk_level_violations_checker(
         total_violations += count
 
     return total_violations / total_unique_words
+
+
+def get_words_by_group(
+        group_name: str, 
+        ) -> list[str]:
+    
+    cursor = dbm.get_db_cursor()
+    
+    cursor.execute(f"""
+    select Character 
+    from {dbm.table_name}
+    where WordGroup = '{group_name}'
+    ;
+    """)
+
+    result = cursor.fetchall()
+
+    words_list = [row[0] for row in result ]
+    # print(words_list)
+
+    return words_list
+
+
+def get_HSK_violations_dict(
+        story_groups_dict: dict[str, list[str]], 
+        hsk_level: int
+        ) -> dict[str, list[str]]:
+    
+    violations_dict = {}
+
+    for group, list in story_groups_dict.items():
+        if "HSK" in group:
+            group_level = int(group[-1])
+            if group_level > hsk_level:
+                violations_dict[group] = list
+
+    return violations_dict

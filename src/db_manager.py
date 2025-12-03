@@ -2,6 +2,7 @@ import sqlite3
 import pandas as pd
 import os
 
+# TODO: move this over to config.py and make global constants.
 csv_file_path = "./data/character-table.csv"
 db_file_path = "./data/characters_database.db"
 table_name = 'chinese_word_groups'

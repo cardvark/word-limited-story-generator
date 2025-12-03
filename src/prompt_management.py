@@ -1,10 +1,10 @@
 import src.compare_text as ct
-from src.config import *
+import src.config as cfg
 import re
 
 
 def extract_story_from_response(story_text: str) -> str:
-    pattern = rf"{STORY_DELIMITER}([\s\S]*?){STORY_DELIMITER}"
+    pattern = rf"{cfg.STORY_DELIMITER}([\s\S]*?){cfg.STORY_DELIMITER}"
 
     match = re.search(pattern, story_text)
 
@@ -38,26 +38,105 @@ def run_story_evaluation(
             case 1:
                 story_group_printer(story_groups_dict)
             case 2:
-                return generate_fix_prompt(story_groups_dict, group_counts_dict, required_counts_dict, hsk_level)
+                return generate_fix_prompt(story_groups_dict, required_words, required_counts_dict, hsk_level)
             case 3:
                 print("Enjoy!")
                 return ""
             
 
+# TODO Evaluate parameters to see what I should convert into a class or classes.
 def generate_fix_prompt(
         story_groups_dict: dict[str, list[str]], 
-        group_counts_dict: dict[str, int],
+        required_words: list[str],
         required_counts_dict: dict[str, int],
         hsk_level: int | None,
-        ) -> None:
+        ) -> str:
     # TODO: Get user input on what specific elements to address, and to what constraints.
     # Function to send agent list of words that violate HSK levels. 
         # Provide guidance on % deviation from HSK requirements?
     # Hook in the required words fix function.
     # return to agent. 
     # also print this text for the user so they know what they're prompting.
-    return "Your story included several words that were outside of the requested HSK limit. Please review your text and try again."
 
+    # 1. Check if they want stricter adherence to HSK standards
+    # 2. Confirm to demand required words are included.
+
+    hsk_limit = "HSK " + str(hsk_level)
+
+    request_prompt = "Your story deviated from the original requirements. Please make another attempt, adhering more closely to the requested requirements.\n"
+
+    while True:
+        missing_list = ct.check_required_words_missing(required_counts_dict)
+        
+        if not missing_list: 
+            break
+
+        prompt = f"Several required words were missing from the origiinally requested required words: {missing_list} out of {required_words}.\n\n Would you like to request that the agent try again and include all required words?\n[1] Yes\n[2] No\n>> "
+        
+        user_choice = input(prompt)
+
+        try: 
+            choice = int(user_choice)
+            if choice < 1 or choice > 2: raise ValueError
+        except ValueError:
+            print("Invalid input. Please enter a digit for one of the options.")
+        
+        match user_choice:
+            case "1":
+                request_prompt += f"You failed to include the following required words in your story: {missing_list}.\nPlease be sure to include all required words in your next attempt: {required_words}.\n"
+                break
+            case "2":
+                break
+
+    while True:
+        prompt = f"Would you like to strictly enforce the HSK level restriction ({hsk_limit}) you originally requested?\n[1] Yes\n[2] No\n>> "
+        user_choice = input(prompt)
+
+        try: 
+            choice = int(user_choice)
+            if choice < 1 or choice > 2: raise ValueError
+        except ValueError:
+            print("Invalid input. Please enter a digit for one of the options.")
+        
+        match user_choice:
+            case "1":
+                # Get list of words that exceeded HSK requirements.
+                # Get % of violation compared to all words used.
+                # Share list of actually allowed HSK words.
+                request_prompt += f"Your story included several words that exceeded the original request of {hsk_limit}. \n"
+                fix_request = generate_HSK_fix_prompt(story_groups_dict, hsk_level)
+                request_prompt += fix_request
+                break # temp
+            case "2":
+                break
+
+    return request_prompt
+
+
+def generate_HSK_fix_prompt(
+        story_groups_dict: dict[str, list[str]], 
+        hsk_level: int | None,
+        ) -> str:
+    hsk_limit = "HSK " + str(hsk_level)
+
+    fix_request = f"Note the following words in your story exceeded the originally requested HSK limit ({hsk_limit}):\n"
+
+    HSK_violations_dict = ct.get_HSK_violations_dict(story_groups_dict, hsk_level)
+
+    for group, list in sorted(HSK_violations_dict.items()):
+        fix_request += f"{group}: {list}\n"
+    
+    fix_request += f"Please ensure that all words used are only up to {hsk_limit}. As a reference, the below are comprehensive HSK word lists up to {hsk_limit}:\n"
+
+    for i in range(1, hsk_level + 1):
+        hsk_lookup = f"HSK {i}"
+        hsk_list = ct.get_words_by_group(hsk_lookup)
+        fix_request += f"{hsk_lookup}: {hsk_list}\n"
+    
+    fix_request += "Please refer back to the provided HSK word list(s) when generating your response."
+
+    return fix_request
+    
 
 def run_evaluation_printer(
         story_groups_dict: dict[str, list[str]], 
@@ -71,28 +150,18 @@ def run_evaluation_printer(
     print(f"Note: {hsk_violations_percent * 100:.1f}% characters over HSK{hsk_level}\n")
 
     print("Required words count:")
+    # TODO this isn't printing out right. required count dict is probably broken. 
+        # Required words count:
+        # 吵: 2
+        # 架: 2
+        # ,: 0
+        #  : 0
+        # 遇: 1
+        # 到: 1
+        # 难: 2
+        # 道: 2
     for word, count in required_counts_dict.items():
         print(f"{word}: {count}")
-
-
-def generate_required_words_fix_prompt(
-        story_text: str,
-        required_words: list[str],
-        ) -> str:
-    fix_request = ""
-
-    required_words_count_dict = ct.get_required_words_count(story_text, required_words)
-    missing_list = ct.check_required_words_missing(required_words_count_dict)
-
-    if missing_list:
-        fix_request = "You failed to include the following required words:\n"
-        for word in missing_list:
-            fix_request += f"- {word}\n"
-
-        fix_request += f"Please ensure you include all required words when generating your next attempt: {required_words}\n"
-
-    return fix_request
-
 
 def story_group_printer(story_groups_dict):
     for group, list in sorted(story_groups_dict.items()):
