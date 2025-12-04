@@ -70,9 +70,5 @@ class TestStoryObject(unittest.TestCase):
         story = gen.generate_missing_words_story()
 
         print(story.format_story_groups())
-    
-    def test_003_no_required(self):
-        story = gen.generate_no_required_words_story()
 
-        
 

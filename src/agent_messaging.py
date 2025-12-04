@@ -3,6 +3,7 @@ from src.constants import DEEPSEEK_API_KEY
 import src.prompt_management as pm
 import re
 import src.config as cfg
+from src.story_object import Story
 
 SYSTEM_PROMPT = """
 You are a helpful Chinese language teacher, designed to help English speakers learn Mandarin Chinese. Your responses should be in English, except for where you providing examples or stories in Chinese, which should be written in simplified Chinese characters.
@@ -16,14 +17,14 @@ def generate_initial_prompt() -> None:
     print("This program will contact an LLM in order to generate a exercises in Mandarin Chinese, based on your requirements.")
 
     while True:
-        hsk_level = input("What is the highest level of HSK characters you are familiar with? Enter between 1 - 6.\n>> ")
+        hsk_str = input("What is the highest level of HSK characters you are familiar with? Enter between 1 - 6.\n>> ")
 
         try:
-            hsk_level = int(hsk_level)
+            hsk_int = int(hsk_str)
         except:
             continue
 
-        if hsk_level > 0 and hsk_level < 7:
+        if hsk_int > 0 and hsk_int < 7:
             break
 
     while True:
@@ -58,7 +59,7 @@ def generate_initial_prompt() -> None:
         
     request = f"""Tell me a story about: {story_topic}.
 Requirements:
-- Use characters through HSK{hsk_level} only
+- Use characters through HSK{hsk_int} only
 - No more than 300 words long.
 """
     
@@ -69,13 +70,13 @@ Requirements:
     
     print(f"Submitting the following request:\n{request}")
     print("\nPlease wait while the agent works on your story...")
-    converse_with_agent(request, required_words_list, hsk_level)
+    converse_with_agent(request, required_words_list, hsk_int)
 
 
 def converse_with_agent(
         request: str, 
         required_words: list[str],
-        hsk_level: int,
+        hsk_int: int,
         ) -> None:
     client = OpenAI(
         api_key=DEEPSEEK_API_KEY, 
@@ -94,8 +95,9 @@ def converse_with_agent(
         # print(messages)
 
         story_text = pm.extract_story_from_response(response_content)
+        story = Story(story_text, hsk_int, required_words)
 
-        user_response = pm.run_story_evaluation(story_text, required_words, hsk_level)
+        user_response = pm.run_story_evaluation(story)
 
         if not user_response:
             return
