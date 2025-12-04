@@ -27,18 +27,23 @@ def generate_initial_prompt() -> None:
             break
 
     while True:
-        required_words = input("Do you have any specific Chinese words you wish to see included? List up to ten (10) words or phrases in Simplified Chinese, separated by commas.\n Leave blank if not.\n>> ")
+        raw_words = input(f"Do you have any specific Chinese words you wish to see included? List up to {cfg.MAX_REQUIRED_WORDS} words or phrases in Simplified Chinese, separated by commas.\n Leave blank if not.\n>> ")
 
-        # print(required_words)
+        required_words_list = []
 
-        if not required_words:
+        if not raw_words:
             break
         
-        required_words_list = pm.raw_to_chars_list(required_words)
+        required_words_list = pm.raw_to_chars_list(raw_words)
 
         if not pm.check_if_chinese_chars(required_words_list):
             print("Please ensure all words are simplified Chinese characters.")
             continue
+        
+        if not len(required_words_list) <= cfg.MAX_REQUIRED_WORDS:
+            print(f"Please include no more than {cfg.MAX_REQUIRED_WORDS} words.")
+            continue
+        
         break
     
     # TODO: set up logic for story vs. simple practice sentences.
@@ -46,7 +51,7 @@ def generate_initial_prompt() -> None:
     story_topic = input("Do you have a preference on the subject of the story? E.g., a cat getting lost in the city. Leave blank if you have no preference.\n>> ")
 
     if not story_topic: 
-        if not required_words:
+        if not raw_words:
             story_topic = "a cat getting lost in a city"
         else:
             story_topic = "use your best judgment, based on the specific requested words below."
@@ -57,7 +62,7 @@ Requirements:
 - No more than 300 words long.
 """
     
-    if required_words:
+    if raw_words:
         request += f"- The student is attempting to learn these specific words through practice. Include the following words in your story: {required_words_list}\n"
 
     request += f"Bracket the story with '{cfg.STORY_DELIMITER}' in order to make it easier for the reader to parse the story, separate from any other notes you may have. \nRemember that your story should be in simplified Mandarin Chinese."
@@ -116,6 +121,10 @@ def generate_content(
         messages=messages,
         stream=False,
     )
+
+    if verbose:
+        print(f"Prompt tokens: {response.usage.prompt_tokens}")
+        print(f"Response tokens: {response.usage.completion_tokens}")
     
     response_message = response.choices[0].message
 

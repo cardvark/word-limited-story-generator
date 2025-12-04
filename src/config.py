@@ -1,2 +1,3 @@
 CHAT_MODEL = "deepseek-chat"
 STORY_DELIMITER = "---"
+MAX_REQUIRED_WORDS = 10

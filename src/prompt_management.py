@@ -22,7 +22,7 @@ def run_story_evaluation(
     group_counts_dict = ct.get_group_counts(story_groups_dict, required_words)
     required_counts_dict = ct.get_required_words_count(story_text, required_words)
 
-    run_evaluation_printer(story_groups_dict, group_counts_dict, required_counts_dict, hsk_level)
+    run_evaluation_printer(group_counts_dict, required_counts_dict, hsk_level)
 
     while True:
         prompt = "Select from the following options:\n[1] See detailed Character group and list breakdown.\n[2] Request the agent to fix requirements issues with the story. \n[3] Accept story as is.\n>> "
@@ -139,7 +139,6 @@ def generate_HSK_fix_prompt(
     
 
 def run_evaluation_printer(
-        story_groups_dict: dict[str, list[str]], 
         group_counts_dict: dict[str, int],
         required_counts_dict: dict[str, int],
         hsk_level: int | None,
@@ -149,17 +148,8 @@ def run_evaluation_printer(
     hsk_violations_percent = ct.hsk_level_violations_checker(group_counts_dict, hsk_level)
     print(f"Note: {hsk_violations_percent * 100:.1f}% characters over HSK{hsk_level}\n")
 
-    print("Required words count:")
-    # TODO this isn't printing out right. required count dict is probably broken. 
-        # Required words count:
-        # 吵: 2
-        # 架: 2
-        # ,: 0
-        #  : 0
-        # 遇: 1
-        # 到: 1
-        # 难: 2
-        # 道: 2
+    if required_counts_dict:
+        print("Required words count:")
     for word, count in required_counts_dict.items():
         print(f"{word}: {count}")
 
