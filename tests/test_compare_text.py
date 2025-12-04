@@ -1,5 +1,5 @@
 import unittest
-import src.compare_text as ct
+import src.utils as ct
 import src.db_manager as dbm
 import src.prompt_management as pm
 
@@ -182,7 +182,7 @@ class TestStoryFixes(unittest.TestCase):
         story_groups_dict = ct.get_story_groups_dict(story_text)
         hsk_level = 2
         required_words1 = ['吵架', '遇到', '难道']
-        required_counts_dict = ct.get_required_words_count(story_text, required_words1)
+        required_counts_dict = ct.get_required_words_counts_dict(story_text, required_words1)
 
         prompt = pm.generate_fix_prompt(story_groups_dict, required_words1, required_counts_dict, hsk_level)
         print(prompt)
@@ -212,7 +212,7 @@ class TestStoryFixes(unittest.TestCase):
         story_groups_dict = ct.get_story_groups_dict(story_text)
         hsk_level = 2
         required_words1 = ['吵架', '遇到', '难道']
-        required_counts_dict = ct.get_required_words_count(story_text, required_words1)
+        required_counts_dict = ct.get_required_words_counts_dict(story_text, required_words1)
 
         prompt = pm.generate_fix_prompt(story_groups_dict, required_words1, required_counts_dict, hsk_level)
         print(prompt)
@@ -253,7 +253,7 @@ class TestRequiredList(unittest.TestCase):
         required_list = ['吵架', '遇到', '难道']
         story_text = pm.extract_story_from_response(test_story)
 
-        required_counts_dict = ct.get_required_words_count(story_text, required_list)
+        required_counts_dict = ct.get_required_words_counts_dict(story_text, required_list)
 
         print(required_counts_dict)
 

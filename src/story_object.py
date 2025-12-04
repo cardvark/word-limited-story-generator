@@ -37,7 +37,7 @@ class Story:
 
         return self.group_counts_dict
         
-    def get_required_words_count(self) -> dict[str, int]:
+    def get_required_words_counts_dict(self) -> dict[str, int]:
         if self.required_words_count_dict:
             return self.required_words_count_dict
         
@@ -55,7 +55,7 @@ class Story:
             return self.required_words_missing_list
 
         if not self.required_words_count_dict:
-            self.get_required_words_count()
+            self.get_required_words_counts_dict()
         
         missing_words = []
         
@@ -95,3 +95,33 @@ class Story:
                     violations_dict[group] = list
 
         return violations_dict
+    
+    def format_story_groups(self):
+        output_str = ""
+
+        for group, list in sorted(self.get_story_groups_dict().items()):
+            output_str += f"{group}\n{list}\n"
+
+        return output_str
+
+    def format_group_counts(self):
+        output_str = ""
+        group_counts = self.get_group_counts_dict()
+
+        total_unique_words = 0
+
+        for group, count in group_counts.items():
+            if "partial_match" in group:
+                continue
+            total_unique_words += count
+
+        for group, count in sorted(group_counts.items()):
+            if count == 0:
+                continue
+            if "partial_match" in group:
+                continue
+
+            percent = count / total_unique_words * 100
+            output_str += f"{group}: {count} ({percent: .2f}%)\n"
+    
+        return output_str

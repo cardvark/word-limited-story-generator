@@ -115,7 +115,7 @@ def get_story_groups_dict(story_text: str) -> dict[str, list[str]]:
     return story_groups_dict
 
 
-def get_required_words_count(
+def get_required_words_counts_dict(
         story_text: str, 
         required_words: list[str],
         ) -> dict[str, int]:
