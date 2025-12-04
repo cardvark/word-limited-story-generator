@@ -121,7 +121,8 @@ def get_words_by_group(
         group_name: str, 
         ) -> list[str]:
     
-    cursor = dbm.get_db_cursor()
+    conn = dbm.get_db_conn()
+    cursor = conn.cursor()
     
     cursor.execute(f"""
     select Character 
@@ -135,4 +136,5 @@ def get_words_by_group(
     words_list = [row[0] for row in result ]
     # print(words_list)
 
+    conn.close()
     return words_list
