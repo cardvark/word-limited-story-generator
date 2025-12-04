@@ -64,7 +64,7 @@ Requirements:
     
     print(f"Submitting the following request:\n{request}")
     print("\nPlease wait while the agent works on your story...")
-    converse_with_agent(request, required_words, hsk_level)
+    converse_with_agent(request, required_words_list, hsk_level)
 
 
 def converse_with_agent(

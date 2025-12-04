@@ -217,3 +217,47 @@ class TestStoryFixes(unittest.TestCase):
         prompt = pm.generate_fix_prompt(story_groups_dict, required_words1, required_counts_dict, hsk_level)
         print(prompt)
         pass
+    
+class TestRequiredList(unittest.TestCase):
+    def test_001_raw_to_chars_list(self):
+        # required_chars = input("List chinese words, separated by a comma.")
+        test_string = "吵架, 遇到, 难道"
+
+        required_list = pm.raw_to_chars_list(test_string)
+
+        self.assertEqual(
+            required_list,
+            ['吵架', '遇到', '难道']
+        )
+    
+
+    def test_002_required_words_count(self):
+        test_story = """
+        ---
+小美和小明是男朋友和女朋友。他们常常一起吃饭、看电影。今天，他们吵架了。
+
+小美说：“你昨天不给我打电话。我不高兴。”
+小明说：“我昨天很忙。难道我不能忙吗？”
+小美说：“你说‘晚上打电话’。你没有打。”
+小明说：“对不起。我忘了。”
+
+小美说：“你不好。你不爱我。”
+小明说：“我爱你。但是，我们常常吵架。这不好。”
+小美说：“是的，不好。我们不做男朋友和女朋友了。”
+小明说：“好。”
+
+第二天，小美在街上遇到小明。他们不说话。小美想：“难道我做错了？”小明也想：“我还能有女朋友吗？”他们都不高兴。
+
+---
+"""
+        required_list = ['吵架', '遇到', '难道']
+        story_text = pm.extract_story_from_response(test_story)
+
+        required_counts_dict = ct.get_required_words_count(story_text, required_list)
+
+        print(required_counts_dict)
+
+        for word, count in required_counts_dict.items():
+            print(f"{word}: {count}") 
+
+            
