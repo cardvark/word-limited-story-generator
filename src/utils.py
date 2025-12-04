@@ -76,7 +76,8 @@ def get_segmented_chinese_words_only(story_text: str) -> list[str]:
 # TODO rework this to return also a count of each word used.
 # The data structure is getting a little unwieldy, though. Would be a list of lists? or a list of dicts?
 def get_story_groups_dict(story_text: str) -> dict[str, list[str]]:
-    cursor = dbm.get_db_cursor()
+    conn = dbm.get_db_conn()
+    cursor = conn.cursor()
     table_name = dbm.table_name
     segmented_words = get_segmented_chinese_words_only(story_text)
     story_groups_dict = {}
@@ -112,54 +113,8 @@ def get_story_groups_dict(story_text: str) -> dict[str, list[str]]:
         # no matches found.        
         add_word_to_story_groups(word, "not_found", story_groups_dict)
 
+    conn.close()
     return story_groups_dict
-
-
-def get_required_words_counts_dict(
-        story_text: str, 
-        required_words: list[str],
-        ) -> dict[str, int]:
-    
-    count_dict = {}
-    for word in required_words:
-        word_count = story_text.count(word)
-        count_dict[word] = word_count
-
-    return count_dict
-
-
-def get_missing_required_words_list(
-        required_words_count_dict: dict[str, int],
-        ) -> list[str]:
-    missing_words = []
-    
-    for word, count in required_words_count_dict.items():
-        if count == 0:
-            missing_words.append(word)
-
-    return missing_words
-
-
-def hsk_level_violations_checker(
-        group_counts_dict: dict[str, int], 
-        hsk_level: int) -> float:
-    # returns value 0-1 that exceed the allowed HSK level, or are not found.
-    # hsk_string = str(hsk_level)
-
-    total_unique_words = 0
-    total_violations = 0
-
-    for group_name, count in sorted(group_counts_dict.items()):
-        if "partial_match" in group_name:
-            continue
-        
-        total_unique_words += count
-        if "HSK" in group_name:
-            if int(group_name[-1]) <= hsk_level:
-                continue
-        total_violations += count
-
-    return total_violations / total_unique_words
 
 
 def get_words_by_group(
@@ -181,19 +136,3 @@ def get_words_by_group(
     # print(words_list)
 
     return words_list
-
-
-def get_HSK_violations_dict(
-        story_groups_dict: dict[str, list[str]], 
-        hsk_level: int
-        ) -> dict[str, list[str]]:
-    
-    violations_dict = {}
-
-    for group, list in story_groups_dict.items():
-        if "HSK" in group:
-            group_level = int(group[-1])
-            if group_level > hsk_level:
-                violations_dict[group] = list
-
-    return violations_dict

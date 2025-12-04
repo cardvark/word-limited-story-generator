@@ -22,4 +22,10 @@ def get_db_cursor() -> sqlite3.Connection:
     conn = sqlite3.connect(db_file_path)
 
     return conn.cursor()
-    
+
+def get_db_conn() -> sqlite3.Connection:
+    if not os.path.isfile(db_file_path):
+        generate_database()
+    conn = sqlite3.connect(db_file_path)
+
+    return conn
