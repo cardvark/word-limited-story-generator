@@ -128,7 +128,7 @@ def get_required_words_count(
     return count_dict
 
 
-def check_required_words_missing(
+def get_missing_required_words_list(
         required_words_count_dict: dict[str, int],
         ) -> list[str]:
     missing_words = []
@@ -138,24 +138,6 @@ def check_required_words_missing(
             missing_words.append(word)
 
     return missing_words
-
-
-def get_group_counts(
-        story_groups_dict: dict[str, str],
-        required_words: list[str],
-        ) -> dict[str, int]:
-    
-    group_counts = {}
-    
-    for group, word_list in story_groups_dict.items():
-        word_count = 0
-        for word in word_list:
-            if word in required_words:
-                continue
-            word_count += 1
-        group_counts[group] = word_count
-    
-    return group_counts
 
 
 def hsk_level_violations_checker(

@@ -1,4 +1,4 @@
-import src.compare_text as ct
+import src.utils as ct
 import src.config as cfg
 import re
 
